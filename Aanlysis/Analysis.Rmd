@@ -1,0 +1,259 @@
+---
+title: "Analysis_sockult"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r cars}
+library(tidyverse)
+```
+
+#DATA CLEANING
+
+#Importing dataframe and extracting all participants who finished as well as offer and response columns
+```{r warning=FALSE, include=FALSE}
+
+wide<-read_csv("data/all_apps_wide_2021-05-05-2.csv") #loading the wide dataframe with all data from oTree
+
+df_wide<-filter(wide, wide$participant._current_page_name == "ThankYou") #filtering all participants who did not finish the experiment away. The last page in the experiment is called "ThankYou".
+
+
+Columns_offers<-grep(pattern="\\.Offer$", #Filtering the df_wide dataframe for all columns where participants give offers
+    x=colnames(df_wide))
+
+Columns_responds<-grep(pattern="\\.bot_side$", #Filtering the df_wide dataframe for all columns where bot responds
+    x=colnames(df_wide))
+
+OfferDf<- df_wide[, colnames(df_wide)[Columns_offers]] #A df with data from offers
+
+ResponseDf<-df_wide[, colnames(df_wide)[Columns_responds]]  #A df with bot response
+```
+
+
+#offer df
+```{r include=FALSE}
+#Extracting participant code, age and gender and adding them to the OfferDf
+OfferDf["ParticipantCode"] <- df_wide$participant.code 
+OfferDf["Age"] <- df_wide$Consentform.1.player.Age
+OfferDf["Gender"] <- df_wide$Consentform.1.player.Gender
+
+#relocating to the beginning of the dataframe
+OfferDf <- OfferDf %>% 
+  relocate(ParticipantCode, Age, Gender, .before =ultimatumn_anonym.1.player.Offer)
+
+#removing 
+colnames(OfferDf) <- sub(".player.Offer", "", colnames(OfferDf))
+colnames(OfferDf) <- sub("Persona", "P", colnames(OfferDf))
+colnames(OfferDf) <- sub("ultimatumn_anonym", "An", colnames(OfferDf))
+colnames(OfferDf) <- sub("An.1", "An1", colnames(OfferDf))
+colnames(OfferDf) <- sub("An.2", "An1.2", colnames(OfferDf))
+colnames(OfferDf) <- sub("An.3", "An1.3", colnames(OfferDf))
+colnames(OfferDf) <- sub("An.4", "An1.4", colnames(OfferDf))
+colnames(OfferDf) <- sub("An.5", "An1.5", colnames(OfferDf))
+colnames(OfferDf) <- sub("An.6", "An1.6", colnames(OfferDf))
+colnames(OfferDf) <- sub("An.7", "An1.7", colnames(OfferDf))
+colnames(OfferDf) <- sub("An.8", "An1.8", colnames(OfferDf))
+colnames(OfferDf) <- sub("An.9", "An1.9", colnames(OfferDf))
+colnames(OfferDf) <- sub("An.10", "An10", colnames(OfferDf))
+```
+
+
+
+
+#response df
+```{r include=FALSE}
+ResponseDf["ParticipantCode"] <- df_wide$participant.code 
+ResponseDf["Age"] <- df_wide$Consentform.1.player.Age
+ResponseDf["Gender"] <- df_wide$Consentform.1.player.Gender
+
+colnames(ResponseDf) <- sub("ultimatumn_anonym", "An", colnames(ResponseDf))
+colnames(ResponseDf) <- sub("player.bot_side", "Response", colnames(ResponseDf))
+colnames(ResponseDf) <- sub("ultimatumn_anonym", "An", colnames(ResponseDf))
+colnames(ResponseDf) <- sub("An.1", "An1", colnames(ResponseDf))
+colnames(ResponseDf) <- sub("An.2", "An1.2", colnames(ResponseDf))
+colnames(ResponseDf) <- sub("An.3", "An1.3", colnames(ResponseDf))
+colnames(ResponseDf) <- sub("An.4", "An1.4", colnames(ResponseDf))
+colnames(ResponseDf) <- sub("An.5", "An1.5", colnames(ResponseDf))
+colnames(ResponseDf) <- sub("An.6", "An1.6", colnames(ResponseDf))
+colnames(ResponseDf) <- sub("An.7", "An1.7", colnames(ResponseDf))
+colnames(ResponseDf) <- sub("An.8", "An1.8", colnames(ResponseDf))
+colnames(ResponseDf) <- sub("An.9", "An1.9", colnames(ResponseDf))
+colnames(ResponseDf) <- sub("An.10", "An10", colnames(ResponseDf))
+colnames(ResponseDf) <- sub("Persona", "P", colnames(ResponseDf))
+
+ResponseDf <- ResponseDf %>% 
+  relocate(ParticipantCode, Age, Gender, .before =An1.Response)
+```
+
+
+
+#Creating dataframe with responses and offers 
+```{r include = FALSE}
+#Combining responsedf and offerdf
+Combined<-cbind(ResponseDf, OfferDf)
+
+#including participants
+
+Combined["ParticipantCode"] <- df_wide$participant.code 
+Combined["Age"] <- df_wide$Consentform.1.player.Age
+Combined["Gender"] <- df_wide$Consentform.1.player.Gende
+
+#removing 
+colnames(Combined ) <- sub(".player.Offer", "", colnames(Combined ))
+colnames(Combined ) <- sub("Persona", "P", colnames(Combined ))
+colnames(Combined) <- sub("player.bot_side", "Response", colnames(Combined))
+colnames(Combined ) <- sub("ultimatumn_anonym", "An", colnames(Combined ))
+colnames(Combined ) <- sub("An.1", "An1", colnames(Combined ))
+colnames(Combined ) <- sub("An.2", "An1.2", colnames(Combined ))
+colnames(Combined ) <- sub("An.3", "An1.3", colnames(Combined ))
+colnames(Combined ) <- sub("An.4", "An1.4", colnames(Combined ))
+colnames(Combined ) <- sub("An.5", "An1.5", colnames(Combined ))
+colnames(Combined ) <- sub("An.6", "An1.6", colnames(Combined ))
+colnames(Combined ) <- sub("An.7", "An1.7", colnames(Combined ))
+colnames(Combined ) <- sub("An.8", "An1.8", colnames(Combined ))
+colnames(Combined ) <- sub("An.9", "An1.9", colnames(Combined ))
+colnames(Combined ) <- sub("An.10", "An10", colnames(Combined ))
+
+Combined <- Combined %>% 
+  relocate(Gender, .before =An1.Response)
+
+```
+
+
+
+
+#From wide to long format
+```{r warning=FALSE, include=FALSE}
+#from wide to long format for the Offer only df
+df_long<-reshape(OfferDf, 
+        direction = "long",
+        varying = list(names(OfferDf)[4:83]),
+        v.names = "Offer",
+        idvar = c("ParticipantCode", "Age", "Gender"),
+        timevar = "Round",
+        times = c(names(OfferDf)[4:83]))
+
+#Using a combined dataframe to convert response to long format
+df_respons_long<-reshape(Combined, 
+        direction = "long",
+        varying = list(names(Combined)[4:83]),
+        v.names = "Response",
+        idvar =  "ParticipantCode",
+        timevar = "Round",
+        times = c(names(Combined)[4:83]))
+```
+
+
+#Creating Is_anonymous, OtherPlayer, PrevOffer, PrevResonse, centered_PrevOffer
+```{r warning=FALSE}
+
+df_long["Response"]<- df_respons_long$Response
+df_long["Is_anonymous"] <- ifelse(grepl("An",df_long$Round),'1','0')
+
+#df_long["OtherPlayer"] <- ifelse(grepl("An.",df_long$Round),str_extract(df_long$Round, "\\d"),str_extract(df_long$Round, "\\d"))
+
+#class(df_long$OtherPlayer)
+
+#df_long$OtherPlayer<-as.factor(df_long$OtherPlayer)
+
+
+x<-rep(c(1,2,3,4,5,6,7,8),each=10)
+
+df_long <- df_long %>% 
+  group_by(ParticipantCode) %>% 
+  mutate(Other = x)
+
+
+pacman::p_load(tidyverse, ggpubr, groupdata2, lme4, lmerTest)
+
+
+df_long["Response"]<- df_respons_long$Response#lagging response and offer
+df_long <- df_long %>% 
+  group_by(ParticipantCode, Other) %>% 
+  mutate(PrevOffer = lag(Offer),
+         PrevResponse =lag(Response))
+
+#adding centered previous offer
+df_long <- df_long %>% 
+  group_by(ParticipantCode, Other) %>% 
+  mutate(centered_PrevOffer = ( PrevOffer - 50))
+
+```
+
+
+#Analysis
+```{r}
+
+```
+
+
+
+
+#Semantic part, for participants:
+```{r}
+
+#df_wide$description.1.player.about_you
+#about_you<-grep(pattern="\\.about_you$", #Filtering the df_wide dataframe for all columns where bot responds
+  #  x=colnames(df_wide))
+#Descriptions<- df_wide[, colnames(df_wide)[about_you]] 
+
+#Descriptions["ParticipantCode"] <- df_wide$participant.code   
+
+```
+
+
+#Making Persona dataframes with one word in each row
+```{r}
+library(dplyr)
+library(tidytext)
+Persona_1<-c('I am a 24 year old woman and I study international business communication in Spanish on 5th semester at bachelor’s level. In my spare time I’m active in a political youth party and I like going on long walks with my friends from my studies and the party. During corona I have been baking sourdough bread and started going for walks.')
+
+Persona_2<- c('Work as a personal consultant in Danske bank guiding clients with investments. When I’m off work, I am together with my fiancé and kids. I golf and ride mountain bike with my coworkers in the weekends/off-work days')
+
+Persona_3<-c('My name is Camilla and I’m 19 years old. Im in 3.G in Gymnasium and become a student in June. After the summer i want to study a bachelor in law at Aalborg university and move there with my two friends from my gymnasium. In my spare time i read a lot and watch some Netflix shows.')
+
+Persona_4<-c('I am 23 years old and work part time in Bilka in the garden department. I like taking rides on my motorcycle. I enjoy gardening, cooking and spending time with my friends and play with my cat. I am trying to get a job as an environmental technologist. I am not doing much during these times, looking forward to an open world again so I can travel.')
+
+Persona_5<-c('I’m 21 years old and a student.I study datascience and I have a student-job at a printer firm. In my free time I play piano, paint and read books. I also enjoy watching YouTube and I spend way too much time on Twitter')
+
+Persona_1<-data.frame(Persona_1) %>% unnest_tokens(word, Persona_1)%>%rename(Persona_1 = word)
+  
+Persona_2<-data.frame(Persona_2) %>% unnest_tokens(word, Persona_2)%>% rename(Persona_2 = word)
+
+Persona_3<-data.frame(Persona_3) %>% unnest_tokens(word, Persona_3) %>% rename(Persona_3 = word)
+
+Persona_4<-data.frame(Persona_4) %>% unnest_tokens(word, Persona_4) %>% rename(Persona_4 = word)
+
+Persona_5<-data.frame(Persona_5) %>% unnest_tokens(word, Persona_5)%>% rename(Persona_5 = word)
+
+
+#install.packages("tidytext")
+
+```
+
+to do:
+Semantic analysis:
+- Merge persona with 300 semantic dimensions and taking mean for each dimension pr. persona
+- Do the same for each participant
+- cosine similarity between them
+
+Bayesian analysis:
+- Find meta analytic prior and see what others do...
+
+models:
+i) comparison of anonym vs. non-anonym (gender as random effect and participant ID as random intercept)
+
+ii) comparison between personas (predict offer by cosine similarity between persona and person)
+
+iii) maybe model offer over time (response interacting with centered offer)
+
+
+
+
+
+
+
